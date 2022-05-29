@@ -6,7 +6,9 @@ import DiaryList from './DiaryList';
 
 function App() {
   const [data, setData] = useState([]);
+
   const dataId = useRef(0);
+
   const getData = async() => {
     const response = await fetch('https://jsonplaceholder.typicode.com/comments')
     .then((response)=>response.json());
@@ -21,9 +23,11 @@ function App() {
     });
     setData(initData);
   };
+
   useEffect(()=>{
     getData();
   },[])
+
   const onCreate = useCallback((author, content, emotion) => {
     const created_date = new Date().getTime();
     const newItem = {
@@ -36,21 +40,24 @@ function App() {
     dataId.current += 1;
     setData((data)=>[newItem, ...data]);
   },[]);
-  const onRemove = (targetId) => {
-    const newDiaryList = data.filter((it) => { return it.id !== targetId });
-    setData(newDiaryList);
-  };
-  const onEdit = (targetId, newContent) => {
-    setData(
+
+  const onRemove = useCallback((targetId) => {
+    setData(data => data.filter((it) => { return it.id !== targetId }));
+  },[]);
+
+  const onEdit = useCallback((targetId, newContent) => {
+    setData((data) =>
       data.map((it) => it.id === targetId ? {...it, content:newContent} : it)
     )
-  };
+  },[]);
+
   const getDiaryAnalysis = useMemo(() => {
     const goodCount = data.filter((it)=>it.emotion >= 3).length;
     const badCount = data.length-goodCount;
     const goodRatio = (goodCount / data.length) * 100;
     return {goodCount, badCount, goodRatio}; 
   },[data.length]);
+
   const {goodCount, badCount, goodRatio} = getDiaryAnalysis;
   return (
     <div className="App">
